@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Soham Belhekar // Game Programmer — Unreal · Unity · C++ · C#</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Share+Tech+Mono&display=swap');
+
+  :root{
+    --bg: #07080d;
+    --panel: #0d0f18;
+    --panel-2: #12141f;
+    --border: #232842;
+    --border-hi: #3a4270;
+    --cyan: #00f2ff;
+    --magenta: #ff2e9a;
+    --purple: #8b5cf6;
+    --yellow: #f4ff3d;
+    --text: #e3e9f7;
+    --text-dim: #7d87a8;
+    --text-faint: #4a5170;
+    --display: 'Orbitron', sans-serif;
+    --mono: 'Share Tech Mono', monospace;
+  }
+
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    line-height: 1.55;
+    position: relative;
+  }
+  /* grid backdrop */
+  body::before{
+    content:"";
+    position: fixed; inset:0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 46px 46px;
+    opacity: 0.25;
+    pointer-events:none;
+    z-index:0;
+  }
+  /* scanlines */
+  body::after{
+    content:"";
+    position: fixed; inset:0;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(0,0,0,0) 0px,
+      rgba(0,0,0,0) 2px,
+      rgba(0,242,255,0.02) 3px,
+      rgba(0,0,0,0) 4px
+    );
+    pointer-events:none;
+    z-index: 2;
+    mix-blend-mode: overlay;
+  }
+  .wrap{ max-width: 1180px; margin:0 auto; padding: 0 28px; position:relative; z-index:1; }
+  a{ color:inherit; text-decoration:none; }
+  ul{ list-style:none; }
+
+  .clip{ clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px); }
+
+  .eyebrow{
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--cyan); display:flex; align-items:center; gap:10px;
+  }
+  .eyebrow::before{ content:">"; color: var(--magenta); }
+
+  /* NAV */
+  header{
+    position: sticky; top:0; z-index:50;
+    background: rgba(7,8,13,0.85);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  nav{ display:flex; align-items:center; justify-content:space-between; padding: 18px 0; }
+  .logo{ font-family: var(--display); font-weight:800; font-size:15px; letter-spacing:0.04em; }
+  .logo span{ color: var(--cyan); }
+  .logo::before{ content:"[ "; color: var(--text-faint); }
+  .logo::after{ content:" ]"; color: var(--text-faint); }
+  .nav-links{ display:flex; gap:30px; }
+  .nav-links a{ font-size:12.5px; color: var(--text-dim); letter-spacing:0.04em; }
+  .nav-links a:hover{ color: var(--cyan); }
+
+  .btn{
+    font-family: var(--display); font-size:12px; font-weight:700; letter-spacing:0.06em;
+    padding: 12px 22px; display:inline-flex; align-items:center; gap:8px;
+    border: 1px solid var(--cyan); color: var(--cyan);
+    background: rgba(0,242,255,0.05);
+    transition: all 0.2s ease;
+  }
+  .btn:hover{ background: var(--cyan); color: #05060a; box-shadow: 0 0 24px rgba(0,242,255,0.5); }
+  .btn-mag{ border-color: var(--magenta); color: var(--magenta); background: rgba(255,46,154,0.06); }
+  .btn-mag:hover{ background: var(--magenta); color:#05060a; box-shadow: 0 0 24px rgba(255,46,154,0.5); }
+  .btn-ghost-nav{ border-color: var(--border-hi); color: var(--text-dim); background: transparent; }
+  .btn-ghost-nav:hover{ border-color: var(--text); color: var(--text); box-shadow:none; background: transparent; }
+
+  /* HERO */
+  .hero{ padding: 80px 0 96px; display:grid; grid-template-columns: 1.05fr 0.95fr; gap: 48px; align-items:center; }
+  .glitch-wrap{ position:relative; margin: 18px 0 22px; }
+  .hero h1{
+    font-family: var(--display); font-weight: 900; font-size: clamp(28px, 3.8vw, 46px);
+    line-height:1.18; letter-spacing: 0.01em; color: var(--text);
+    position:relative;
+  }
+  .hero h1 .accent{ color: var(--cyan); }
+  .hero h1 .glitch{
+    position:relative; display:inline-block;
+  }
+  .hero h1 .glitch::before, .hero h1 .glitch::after{
+    content: attr(data-text);
+    position:absolute; left:0; top:0; width:100%; overflow:hidden;
+  }
+  .hero h1 .glitch::before{ color: var(--magenta); animation: glitch1 3.4s infinite linear; clip-path: inset(0 0 55% 0); }
+  .hero h1 .glitch::after{ color: var(--cyan); animation: glitch2 3.9s infinite linear; clip-path: inset(55% 0 0 0); }
+  @keyframes glitch1{ 0%,92%,100%{ transform: translate(0,0); opacity:0; } 93%{ transform: translate(-3px,1px); opacity:0.85; } 95%{ transform: translate(2px,-1px); opacity:0.85;} 97%{ opacity:0; } }
+  @keyframes glitch2{ 0%,90%,100%{ transform: translate(0,0); opacity:0; } 91%{ transform: translate(3px,-1px); opacity:0.85; } 94%{ transform: translate(-2px,1px); opacity:0.85;} 96%{ opacity:0; } }
+  @media (prefers-reduced-motion: reduce){ .hero h1 .glitch::before, .hero h1 .glitch::after{ animation:none; display:none; } }
+
+  .hero p.lede{ color: var(--text-dim); font-size: 15.5px; max-width: 480px; margin-bottom: 30px; }
+  .cta-row{ display:flex; gap:14px; flex-wrap:wrap; margin-bottom: 34px; }
+  .stack-strip{ font-size:11.5px; color: var(--text-faint); display:flex; gap:16px; flex-wrap:wrap; letter-spacing:0.03em; }
+  .stack-strip b{ color: var(--text-dim); }
+
+  /* RADAR */
+  .radar-panel{
+    border: 1px solid var(--border-hi);
+    background: var(--panel);
+    padding: 20px;
+    position: relative;
+  }
+  .radar-head{ display:flex; justify-content:space-between; font-size:10.5px; color: var(--text-faint); margin-bottom: 14px; letter-spacing:0.05em; }
+  .radar-head .live{ color: var(--magenta); }
+  .radar-head .live::before{ content:"● "; }
+  .radar-box{ position:relative; aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; }
+  .radar-ring{ position:absolute; border:1px solid var(--border-hi); border-radius:50%; }
+  .r1{ width:100%; height:100%; }
+  .r2{ width:70%; height:70%; }
+  .r3{ width:38%; height:38%; }
+  .radar-cross{ position:absolute; inset:0; }
+  .radar-cross::before, .radar-cross::after{ content:""; position:absolute; background: var(--border-hi); }
+  .radar-cross::before{ left:0; right:0; top:50%; height:1px; }
+  .radar-cross::after{ top:0; bottom:0; left:50%; width:1px; }
+  .radar-sweep{
+    position:absolute; width:50%; height:50%; top:0; left:50%; transform-origin: 0% 100%;
+    background: conic-gradient(from 0deg, rgba(0,242,255,0.35), transparent 40deg);
+    animation: sweep 4s linear infinite;
+  }
+  @keyframes sweep{ from{ transform: rotate(0deg);} to{ transform: rotate(360deg);} }
+  @media (prefers-reduced-motion: reduce){ .radar-sweep{ animation:none; } }
+  .blip{ position:absolute; font-family: var(--display); font-size: 10px; font-weight:700; color: var(--cyan); letter-spacing:0.03em; display:flex; align-items:center; gap:6px; }
+  .blip::before{ content:""; width:6px; height:6px; border-radius:50%; background: var(--cyan); box-shadow:0 0 8px var(--cyan); }
+  .blip.b-mag::before{ background: var(--magenta); box-shadow:0 0 8px var(--magenta); }
+  .blip.b-mag{ color: var(--magenta); }
+  .b1{ top:8%; left:50%; transform: translateX(-50%); }
+  .b2{ top:32%; right:2%; }
+  .b3{ bottom:30%; right:6%; }
+  .b4{ bottom:6%; left:50%; transform: translateX(-50%); }
+  .b5{ bottom:30%; left:4%; }
+  .b6{ top:32%; left:0%; }
+  .radar-foot{ display:flex; justify-content:space-between; font-size:10px; color: var(--text-faint); margin-top:14px; border-top:1px solid var(--border); padding-top:10px; }
+
+  /* SECTIONS */
+  section{ padding: 84px 0; border-top: 1px solid var(--border); }
+  .section-head{ margin-bottom: 42px; max-width: 620px; }
+  .section-head h2{ font-family: var(--display); font-weight:800; font-size: clamp(22px, 2.8vw, 30px); margin-top:10px; letter-spacing:0.01em; }
+  .section-head p{ color: var(--text-dim); margin-top: 12px; font-size: 14.5px; }
+
+  /* STACK — terminal cards */
+  .term-grid{ display:grid; grid-template-columns: repeat(3,1fr); gap:16px; }
+  .term-card{ border:1px solid var(--border); background: var(--panel); padding: 20px; transition: border-color 0.2s ease; }
+  .term-card:hover{ border-color: var(--cyan); }
+  .term-prompt{ font-size:11.5px; color: var(--text-faint); margin-bottom:10px; }
+  .term-prompt b{ color: var(--magenta); }
+  .term-card h3{ font-family: var(--display); font-size:15px; color: var(--text); margin-bottom:8px; letter-spacing:0.02em; }
+  .term-card p{ font-size:12.5px; color: var(--text-dim); }
+  .cursor{ display:inline-block; width:7px; height:12px; background: var(--cyan); animation: blink 1s steps(1) infinite; vertical-align:middle; }
+  @keyframes blink{ 50%{ opacity:0; } }
+
+  /* SERVICES */
+  .svc-grid{ display:grid; grid-template-columns: repeat(3,1fr); gap:16px; }
+  .svc-card{ border:1px solid var(--border); background: var(--panel-2); padding: 24px 20px; display:flex; flex-direction:column; gap:12px; }
+  .svc-icon{ width:34px; height:34px; border:1px solid var(--border-hi); display:flex; align-items:center; justify-content:center; color: var(--cyan); font-family: var(--display); }
+  .svc-card h3{ font-family: var(--display); font-size:14.5px; font-weight:700; letter-spacing:0.01em; }
+  .svc-card p{ font-size:12.5px; color: var(--text-dim); flex-grow:1; }
+  .svc-card a{ font-size:11.5px; color: var(--magenta); letter-spacing:0.02em; }
+  .svc-card a:hover{ text-decoration:underline; }
+
+  /* PROCESS — boot log */
+  .boot-log{ border:1px solid var(--border); background: var(--panel); padding: 26px 28px; }
+  .boot-line{ display:flex; gap:14px; padding: 10px 0; border-bottom: 1px dashed var(--border); font-size:13px; }
+  .boot-line:last-child{ border-bottom:none; }
+  .boot-tag{ color: var(--cyan); font-weight:700; width:70px; flex-shrink:0; }
+  .boot-line b{ color: var(--text); }
+  .boot-line span{ color: var(--text-dim); }
+
+  /* WORK */
+  .work-grid{ display:grid; grid-template-columns: repeat(3,1fr); gap:16px; }
+  .work-card{ border:1px solid var(--border); background: var(--panel); overflow:hidden; }
+  .work-thumb{
+    height:150px; position:relative; border-bottom:1px solid var(--border);
+    background:
+      repeating-linear-gradient(45deg, var(--panel-2), var(--panel-2) 8px, #0a0c14 8px, #0a0c14 16px);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .work-thumb span{ font-size:11px; color: var(--text-faint); letter-spacing:0.06em; text-transform:uppercase; }
+  .work-body{ padding:18px; }
+  .work-tags{ display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
+  .work-tags span{ font-size:10px; border:1px solid var(--border-hi); padding:3px 8px; color: var(--text-dim); }
+  .work-body h3{ font-family: var(--display); font-size:14.5px; font-weight:700; margin-bottom:6px; }
+  .work-body p{ font-size:12.5px; color: var(--text-dim); }
+  .work-card.add-new{ display:flex; align-items:center; justify-content:center; border-style:dashed; min-height:250px; }
+  .work-card.add-new .inner{ text-align:center; }
+  .work-card.add-new p{ font-size:11.5px; color: var(--text-faint); }
+  .work-card.add-new .plus{ font-size:22px; width:40px; height:40px; border:1px solid var(--border-hi); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 10px; color: var(--text-faint); }
+
+  /* CONTACT */
+  .contact-panel{
+    border: 1px solid var(--cyan);
+    background: linear-gradient(160deg, var(--panel-2), var(--panel));
+    padding: 56px 44px; text-align:center; position:relative;
+    box-shadow: 0 0 40px rgba(0,242,255,0.08);
+  }
+  .contact-panel h2{ font-family: var(--display); font-weight:900; font-size: clamp(22px,3.2vw,34px); margin:14px 0; }
+  .contact-panel p{ color: var(--text-dim); max-width:460px; margin:0 auto 28px; }
+  .contact-links{ display:flex; justify-content:center; gap:22px; margin-top:30px; font-size:12px; color: var(--text-faint); flex-wrap:wrap; }
+  .contact-links a:hover{ color: var(--cyan); }
+
+  .platform-grid{
+    display:grid; grid-template-columns: repeat(5,1fr); gap:14px; margin-top: 34px;
+  }
+  .plat-btn{
+    border: 1px solid var(--border-hi);
+    background: var(--panel);
+    padding: 18px 12px;
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+    transition: all 0.2s ease;
+  }
+  .plat-btn:nth-child(odd):hover{ border-color: var(--cyan); box-shadow: 0 0 20px rgba(0,242,255,0.25); }
+  .plat-btn:nth-child(even):hover{ border-color: var(--magenta); box-shadow: 0 0 20px rgba(255,46,154,0.25); }
+  .plat-tag{ font-family: var(--display); font-size:10px; color: var(--text-faint); letter-spacing:0.08em; }
+  .plat-name{ font-family: var(--display); font-size:14px; font-weight:700; color: var(--text); letter-spacing:0.02em; }
+  .plat-sub{ font-size:10.5px; color: var(--text-dim); text-align:center; }
+  @media (max-width: 900px){ .platform-grid{ grid-template-columns: repeat(3,1fr); } }
+  @media (max-width: 560px){ .platform-grid{ grid-template-columns: repeat(2,1fr); } }
+
+  footer{ padding:28px 0 46px; text-align:center; font-size:11px; color: var(--text-faint); }
+  footer .m{ color: var(--magenta); }
+
+  @media (max-width: 900px){
+    .hero{ grid-template-columns: 1fr; }
+    .radar-panel{ order:-1; max-width:380px; margin:0 auto; }
+    .term-grid, .svc-grid, .work-grid{ grid-template-columns: repeat(2,1fr); }
+    .nav-links{ display:none; }
+    .contact-panel{ padding:40px 22px; }
+  }
+  @media (max-width: 620px){
+    .term-grid, .svc-grid, .work-grid{ grid-template-columns: 1fr; }
+    .boot-line{ flex-direction:column; gap:4px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <nav>
+      <div class="logo">SB<span>::GAME_DEV</span></div>
+      <div class="nav-links">
+        <a href="#stack">Stack</a>
+        <a href="#services">Services</a>
+        <a href="#work">Work</a>
+        <a href="#process">Process</a>
+        <a href="#contact">Contact</a>
+      </div>
+      <a class="btn" href="#contact">Find_Me_Everywhere</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <section class="hero" style="border-top:none;">
+      <div>
+        <div class="eyebrow">System: game_programmer.exe — status: online</div>
+        <div class="glitch-wrap">
+          <h1>
+            I code the <span class="accent glitch" data-text="worlds">worlds</span><br>
+            you <span class="glitch" data-text="play in.">play in.</span>
+          </h1>
+        </div>
+        <p class="lede">Gameplay systems, engine tools, and rendering work in Unreal Engine and Unity — built in C++ and C#, with OpenGL and SFML when a project needs to go closer to the metal.</p>
+        <div class="cta-row">
+          <a class="btn" href="https://fiverr.com/Peak_soham.dev" target="_blank" rel="noopener">Hire_On_Fiverr →</a>
+          <a class="btn btn-mag" href="https://www.upwork.com/freelancers/~YOUR_ID" target="_blank" rel="noopener">Hire_On_Upwork →</a>
+          <a class="btn btn-ghost-nav" href="#work">View_Work</a>
+        </div>
+        <div class="stack-strip">
+          <span><b>Engines:</b> Unreal, Unity</span>
+          <span><b>Languages:</b> C++, C#</span>
+          <span><b>Graphics:</b> OpenGL</span>
+          <span><b>Libraries:</b> SFML</span>
+        </div>
+      </div>
+
+      <div class="radar-panel clip">
+        <div class="radar-head">
+          <span>SKILL_RADAR.SYS</span>
+          <span class="live">SCANNING</span>
+        </div>
+        <div class="radar-box">
+          <div class="radar-ring r1"></div>
+          <div class="radar-ring r2"></div>
+          <div class="radar-ring r3"></div>
+          <div class="radar-cross"></div>
+          <div class="radar-sweep"></div>
+          <div class="blip b1">UNREAL</div>
+          <div class="blip b2 b-mag">UNITY</div>
+          <div class="blip b3">C++</div>
+          <div class="blip b4 b-mag">C#</div>
+          <div class="blip b5">OPENGL</div>
+          <div class="blip b6 b-mag">SFML</div>
+        </div>
+        <div class="radar-foot">
+          <span>RANGE: FULL_STACK</span>
+          <span>SIGNAL: STRONG</span>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section id="stack">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow">// toolset</div>
+        <h2>Built with the engines that ship games</h2>
+        <p>What's under the hood, queried directly.</p>
+      </div>
+      <div class="term-grid">
+        <div class="term-card">
+          <div class="term-prompt"><b>root@sb:~$</b> query unreal_engine<span class="cursor"></span></div>
+          <h3>Unreal Engine</h3>
+          <p>Blueprint + C++ gameplay systems, custom components, editor tooling, performance passes.</p>
+        </div>
+        <div class="term-card">
+          <div class="term-prompt"><b>root@sb:~$</b> query unity<span class="cursor"></span></div>
+          <h3>Unity</h3>
+          <p>C# gameplay and systems architecture, custom editor tools, PC and mobile builds.</p>
+        </div>
+        <div class="term-card">
+          <div class="term-prompt"><b>root@sb:~$</b> query cpp<span class="cursor"></span></div>
+          <h3>C++</h3>
+          <p>Engine-level and performance-critical code — memory management, native plugins.</p>
+        </div>
+        <div class="term-card">
+          <div class="term-prompt"><b>root@sb:~$</b> query csharp<span class="cursor"></span></div>
+          <h3>C#</h3>
+          <p>Gameplay logic, tooling, and systems work inside Unity and standalone apps.</p>
+        </div>
+        <div class="term-card">
+          <div class="term-prompt"><b>root@sb:~$</b> query opengl<span class="cursor"></span></div>
+          <h3>OpenGL</h3>
+          <p>Custom rendering pipelines and shaders for projects outside a full engine.</p>
+        </div>
+        <div class="term-card">
+          <div class="term-prompt"><b>root@sb:~$</b> query sfml<span class="cursor"></span></div>
+          <h3>SFML</h3>
+          <p>Lightweight 2D games and prototypes — window, input, audio, rendering.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="services">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow">// services</div>
+        <h2>What I can build for you</h2>
+        <p>Fixed-scope gigs or ongoing work — describe what you need and I'll scope it.</p>
+      </div>
+      <div class="svc-grid">
+        <div class="svc-card"><div class="svc-icon">◆</div><h3>Gameplay Programming</h3><p>Player controllers, combat systems, inventory, AI behavior, and core mechanics.</p></div>
+        <div class="svc-card"><div class="svc-icon">▣</div><h3>Engine &amp; Tools Programming</h3><p>Custom editor tools, plugins, and workflow automation for production pipelines.</p></div>
+        <div class="svc-card"><div class="svc-icon">◈</div><h3>Graphics &amp; Rendering</h3><p>Shader work, custom render passes, OpenGL-based rendering outside a standard engine.</p></div>
+        <div class="svc-card"><div class="svc-icon">⇄</div><h3>Multiplayer &amp; Netcode</h3><p>Client-server architecture, replication, and matchmaking for multiplayer projects.</p></div>
+        <div class="svc-card"><div class="svc-icon">▤</div><h3>Porting &amp; Optimization</h3><p>Profiling, frame-rate fixes, and platform ports for clean performance.</p></div>
+        <div class="svc-card"><div class="svc-icon">✕</div><h3>Bug Fixing &amp; Debugging</h3><p>Tracing crashes and hard-to-reproduce bugs down to root cause, then fixing them.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="process">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow">// process</div>
+        <h2>How a project runs, start to finish</h2>
+      </div>
+      <div class="boot-log">
+        <div class="boot-line"><span class="boot-tag">[01]</span><b>BRIEF</b><span>— scope, platform, and definition of done, agreed before work starts.</span></div>
+        <div class="boot-line"><span class="boot-tag">[02]</span><b>PROTOTYPE</b><span>— a fast, rough build of the core mechanic to validate direction.</span></div>
+        <div class="boot-line"><span class="boot-tag">[03]</span><b>BUILD</b><span>— full implementation, with regular milestone check-ins.</span></div>
+        <div class="boot-line"><span class="boot-tag">[04]</span><b>TEST</b><span>— bug passes, edge cases, and performance profiling.</span></div>
+        <div class="boot-line"><span class="boot-tag">[05]</span><b>SHIP</b><span>— clean handoff, documented code, notes on how it all works.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="work">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow">// selected work</div>
+        <h2>A few projects to look at</h2>
+        <p>Replace these with real screenshots, titles, and one-line summaries of your own projects.</p>
+      </div>
+      <div class="work-grid">
+        <div class="work-card">
+          <div class="work-thumb"><span>Project screenshot</span></div>
+          <div class="work-body">
+            <div class="work-tags"><span>Unreal</span><span>C++</span><span>3D</span></div>
+            <h3>Project Title One</h3>
+            <p>One line on the project, your role, and what it shipped with.</p>
+          </div>
+        </div>
+        <div class="work-card">
+          <div class="work-thumb"><span>Project screenshot</span></div>
+          <div class="work-body">
+            <div class="work-tags"><span>Unity</span><span>C#</span><span>Mobile</span></div>
+            <h3>Project Title Two</h3>
+            <p>One line on the project, your role, and what it shipped with.</p>
+          </div>
+        </div>
+        <div class="work-card">
+          <div class="work-thumb"><span>Project screenshot</span></div>
+          <div class="work-body">
+            <div class="work-tags"><span>OpenGL</span><span>SFML</span><span>2D</span></div>
+            <h3>Project Title Three</h3>
+            <p>One line on the project, your role, and what it shipped with.</p>
+          </div>
+        </div>
+        <div class="work-card add-new">
+          <div class="inner">
+            <div class="plus">+</div>
+            <p>Add your next project here</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact" style="border-bottom:none;">
+    <div class="wrap">
+      <div class="contact-panel clip">
+        <div class="eyebrow" style="justify-content:center;">Status: available for work</div>
+        <h2>Got a game that needs building?</h2>
+        <p>Pick a channel — same person, same code quality, on every platform.</p>
+        <div class="platform-grid">
+          <a class="plat-btn" href="https://fiverr.com/Peak_soham.dev" target="_blank" rel="noopener">
+            <span class="plat-tag">01</span><span class="plat-name">Fiverr</span><span class="plat-sub">Fixed-scope gigs</span>
+          </a>
+          <a class="plat-btn" href="https://www.upwork.com/freelancers/~YOUR_ID" target="_blank" rel="noopener">
+            <span class="plat-tag">02</span><span class="plat-name">Upwork</span><span class="plat-sub">Ongoing contracts</span>
+          </a>
+          <a class="plat-btn" href="#" target="_blank" rel="noopener">
+            <span class="plat-tag">03</span><span class="plat-name">GitHub</span><span class="plat-sub">Code &amp; repos</span>
+          </a>
+          <a class="plat-btn" href="#" target="_blank" rel="noopener">
+            <span class="plat-tag">04</span><span class="plat-name">LinkedIn</span><span class="plat-sub">Professional profile</span>
+          </a>
+          <a class="plat-btn" href="mailto:sohambelhekar09@gmail.com">
+            <span class="plat-tag">05</span><span class="plat-name">Email</span><span class="plat-sub">sohambelhekar09@gmail.com</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">&copy; 2026 Soham Belhekar <span class="m">::</span> Game Programmer <span class="m">::</span> System nominal.</div>
+</footer>
+
+</body>
+</html>
